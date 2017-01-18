@@ -81,13 +81,13 @@ exports.down = (knex, Promise) => {
 };
 ```
 
-(But, why is `Promise` passed in as a second argument?)
+(But, why is `Promise` passed in as a second argument? Write a paragraph here elaborating on how you have to return a single promise. `Promise.all` allows you to do multiple things and return one promise. We're not using it at this moment, but we will in a second.)
+
+`knex migrate:latest`
 
 ### Seeds
 
 Seeds are some default data. This will be useful when we first start developing our application.
-
-
 
 ```js
 exports.seed = function(knex, Promise) {
