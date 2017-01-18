@@ -81,6 +81,8 @@ exports.down = (knex, Promise) => {
 };
 ```
 
+(Migrations are kind of like version control for databases. For every `up` there must be an equal and opposite `down` that will allow us to rollback those changes.)
+
 (But, why is `Promise` passed in as a second argument? Write a paragraph here elaborating on how you have to return a single promise. `Promise.all` allows you to do multiple things and return one promise. We're not using it at this moment, but we will in a second.)
 
 `knex migrate:latest`
