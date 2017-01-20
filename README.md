@@ -148,7 +148,6 @@ Let's right some code to pull stuff out of the database.
 ```js
 const environment = process.env.NODE_ENV || 'development';
 const configuration = require('../knexfile')[environment];
-
 const database = require('knex')(configuration);
 
 database.select()
@@ -162,3 +161,5 @@ There are a few things going on in the code above.
 1. We want to know if we're in a development, testing, or production environment. If we don't know, we'll assume we're in development.
 2. Based on that environment, we'll fetch the database configuration from `knexfile.js` for whatever environment we're in.
 3. Finally, we'll ask the database for everything in the `Foods` table and log it to the console.
+
+If you run `npm start`, you should see our three food items. The next steps will be to build an abstraction around these database queries and an Express API.
