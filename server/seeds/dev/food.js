@@ -13,7 +13,7 @@ exports.seed = (knex, Promise) => {
         knex('Food').insert({
           id: 2,
           name: 'Cocktail olives',
-          quantity: '1 jar',
+          quantity: 'Half a jar',
           notes: 'Martinis were fun for like one night.'
         }),
         knex('Food').insert({

@@ -2,21 +2,7 @@
 
 A humble little application for building an API with Express and Knex and consuming it with React and Redux.
 
-## Notes
-
-- You should have Postgres installed on your computer.
-
-### Setting Up the Database
-
-```js
-const database = require('knex')({
-  client: 'pg',
-  connection: process.env.PG_CONNECTION_STRING,
-  searchPath: 'knex,public'
-});
-```
-
-### Setup
+## Setting Up the Database
 
 ```
 npm install knex -g
@@ -27,21 +13,26 @@ npm install knex -g
 Created ./knexfile.js
 ```
 
-#### Additional Configuration
+### Database Configuration
+
+This generated a really nice configuration file that I blew away like some kind of monster. Let's just start with a development environment for now. We'll burn the production and testing configuration bridges when we get to them.
 
 ```js
-development: {
-  client: 'sqlite3',
-  connection: {
-    filename: './dev.sqlite3'
-  },
-  migrations: {
-    directory: './server/migrations'
-  },
-  seeds: {
-    directory: './server/seeds/dev'
+module.exports = {
+  development: {
+    client: 'sqlite3',
+    connection: {
+      filename: './server/dev.sqlite3'
+    },
+    migrations: {
+      directory: './server/migrations'
+    },
+    seeds: {
+      directory: './server/seeds/dev'
+    },
+    useNullAsDefault: true
   }
-},
+};
 ```
 
 ### Migrations
@@ -50,7 +41,7 @@ development: {
 knex migrate:make initial
 ```
 
-This created a `migrations` directory at the root of the project and added a time stamped file with the name of the migration at the end.
+This created a `migrations` directory at the root of the project and added a time stamped file with the name of the migration at the end. The `initial` part is totally arbitrary, it could be anything, but it should be something descriptive. If you're creating a migration that adds a "Expiration Date" column to the "Foods" table, you probably want to go with something along the lines of `add-expiration-date-to-food-table`.
 
 The file should look something like this:
 
@@ -64,7 +55,9 @@ exports.down = function(knex, Promise) {
 };
 ```
 
-I editted as follows:
+Migrations are kind of like version control for databases. For every `up` there must be an equal and opposite `down` that will allow us to rollback those changes. `up` defines what should happen when we do the migration. `down` is the reverse. If we want to roll back to a previous version, then `down` undoes whatever `up` did.
+
+I editted the migration as follows:
 
 ```js
 exports.up = (knex, Promise) => {
@@ -81,9 +74,7 @@ exports.down = (knex, Promise) => {
 };
 ```
 
-(Migrations are kind of like version control for databases. For every `up` there must be an equal and opposite `down` that will allow us to rollback those changes.)
-
-(But, why is `Promise` passed in as a second argument? Write a paragraph here elaborating on how you have to return a single promise. `Promise.all` allows you to do multiple things and return one promise. We're not using it at this moment, but we will in a second.)
+But, why is `Promise` passed in as a second argument? Knex is expecting that these methods return a promise of some sort. All Knex methods return a promise, so we fulfilled our end of the bargin in the example above. `Promise.all` allows you to do multiple things and return one promise. Knex passes us a reference to `Promise`, because it's not natively supported in some previous versions of Node. We're not using it at this moment, but we will in a second.
 
 `knex migrate:latest`
 
@@ -111,11 +102,9 @@ We're going to need to modify this a bit.
 ```js
 
 exports.seed = (knex, Promise) => {
-  // Deletes ALL existing entries
   return knex('Food').del()
     .then(() => {
       return Promise.all([
-        // Inserts seed entries
         knex('Food').insert({
           id: 1,
           name: 'Vegan ham',
@@ -125,7 +114,7 @@ exports.seed = (knex, Promise) => {
         knex('Food').insert({
           id: 2,
           name: 'Cocktail olives',
-          quantity: '1 jar',
+          quantity: 'Half a jar',
           notes: 'Martinis were fun for like one night.'
         }),
         knex('Food').insert({
@@ -139,3 +128,37 @@ exports.seed = (knex, Promise) => {
 };
 ```
 
+You'll notice that I used `Promise.all` this time. It's becasue I wanted to do three things (i.e. insert each of my fake foods). `Promise.all` will resolve when all three of my inserts resolve.
+
+### Running the Migrations and Seeding the Database
+
+We configured everything. Now, we just need to run our migration and seed the database.
+
+```
+knex migrate:latest
+knex seed:run
+```
+
+This will all of the migrations up to and including the most recent one. (We only have one, so this is pretty straightforward for us.) Next, we'll insert our three food items so that we have something to work with in the next step.
+
+## Fetching From the Database
+
+Let's right some code to pull stuff out of the database.
+
+```js
+const environment = process.env.NODE_ENV || 'development';
+const configuration = require('../knexfile')[environment];
+
+const database = require('knex')(configuration);
+
+database.select()
+        .table('Food')
+        .then(console.log)
+        .catch(console.error);
+```
+
+There are a few things going on in the code above.
+
+1. We want to know if we're in a development, testing, or production environment. If we don't know, we'll assume we're in development.
+2. Based on that environment, we'll fetch the database configuration from `knexfile.js` for whatever environment we're in.
+3. Finally, we'll ask the database for everything in the `Foods` table and log it to the console.
