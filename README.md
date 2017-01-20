@@ -2,6 +2,8 @@
 
 A humble little application for building an API with Express and Knex and consuming it with React and Redux.
 
+There is a starter version of this repository on the `master` branch. This tutorial assumes you're starting from the current state of `master`.
+
 ## Setting Up the Database
 
 ```
