@@ -145,7 +145,7 @@ This will all of the migrations up to and including the most recent one. (We onl
 
 ## Fetching From the Database
 
-Let's right some code to pull stuff out of the database.
+Let's write some code to pull stuff out of the database.
 
 ```js
 const environment = process.env.NODE_ENV || 'development';
